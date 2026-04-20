@@ -1,6 +1,10 @@
+import { useContext } from "react";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Navbar() {
+  const { mode, setMode } = useContext(AuthContext);
+
   return (
     <div>
       <nav className="navbar">
@@ -17,10 +21,10 @@ export default function Navbar() {
             </Link>
           </div>
           <div className="navbar-auth">
-            <Link to="/auth" className="btn btn-secondary">
+            <Link to="/auth" onClick={() => setMode("login")} className="btn btn-secondary">
               Login
             </Link>
-            <Link to="/auth" className="btn btn-primary">
+            <Link to="/auth" onClick={() => setMode("signup")}  className="btn btn-primary">
               Sign up
             </Link>
           </div>
