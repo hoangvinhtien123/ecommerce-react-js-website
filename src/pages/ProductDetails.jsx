@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getProductById } from "../data/product";
+import { useCart } from "../context/CartContext";
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const { addToCart, cartItems } = useCart();
   const [product, setProduct] = useState(null);
   const navigate = useNavigate();
   useEffect(() => {
@@ -13,12 +15,16 @@ export default function ProductDetails() {
       return;
     }
     setProduct(foundProduct);
-    console.log(foundProduct);
   }, [id]);
 
-  if(!product){
-    return <></>
+  if (!product) {
+    return <></>;
   }
+
+  const productsInCart = cartItems.find((p) => p.id === product.id);
+  const productQuantityLabel = productsInCart
+    ? `${productsInCart.quantity}`
+    : "";
 
   return (
     <div className="page">
@@ -31,7 +37,12 @@ export default function ProductDetails() {
             <h1 className="product-detail-name">{product.name}</h1>
             <p className="product-detail-price">${product.price}</p>
             <p className="product-detail-description">{product.description}</p>
-            <button className="btn btn-primary">Add to cart</button>
+            <button
+              className="btn btn-primary"
+              onClick={() => addToCart(product.id)}
+            >
+              Add to cart ({productQuantityLabel})
+            </button>
           </div>
         </div>
       </div>
