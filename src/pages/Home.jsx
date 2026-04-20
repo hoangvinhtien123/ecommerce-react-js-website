@@ -1,5 +1,5 @@
 
-import ProductCart from "../components/ProductCard";
+import ProductCard from "../components/ProductCard";
 import { getProducts } from "../data/product";
 
 export default function Home() {
@@ -16,7 +16,7 @@ export default function Home() {
         <h2 className="page-title">Our Products</h2>
         <div className="product-grid">
           {products.map((product) => (
-            <ProductCart item = {product} key={product.id}/>
+            <ProductCard item = {product} key={product.id}/>
           ))}
         </div>
       </div>
