@@ -3,26 +3,36 @@ import { createContext, useContext, useState } from "react";
 const AuthContext = createContext(null);
 
 export default function AuthProvider({ children }) {
-  const [user, setUser] = useState(
-    localStorage.getItem("currentUserEmail")
-      ? localStorage.getItem("currentUserEmail")
-      : null,
-  );
+  // Fix: Initialize as an object { email: "..." } instead of a raw string
+  // If it's a raw string, `user.email` in Navbar will crash the app on refresh!
+  const [user, setUser] = useState(() => {
+    const savedEmail = localStorage.getItem("currentUserEmail");
+    return savedEmail ? { email: savedEmail } : null;
+  });
 
   const [mode, setMode] = useState("login");
 
-  function signUp(email, password) {
-    let users = JSON.parse(localStorage.getItem("users")) || [];
+  // Helper to safely get users from local storage
+  const getUsers = () => {
+    try {
+      return JSON.parse(localStorage.getItem("users")) || [];
+    } catch {
+      return [];
+    }
+  };
 
-    if (users.find((u) => u.email == email)) {
+  function signUp(email, password) {
+    const users = getUsers();
+
+    if (users.find((u) => u.email === email)) {
       return {
         success: false,
-        message: "Email already existed!",
+        message: "An account with this email already exists.",
         type: "email",
       };
     }
-    let newUser = { email, password };
 
+    const newUser = { email, password };
     users.push(newUser);
 
     localStorage.setItem("users", JSON.stringify(users));
@@ -33,14 +43,13 @@ export default function AuthProvider({ children }) {
   }
 
   function login(email, password) {
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-
-    const user = users.find((u) => u.email == email && u.password == password);
+    const users = getUsers();
+    const user = users.find((u) => u.email === email && u.password === password);
 
     if (!user) {
       return {
         success: false,
-        message: "Invalid email or password",
+        message: "Invalid email or password. Please try again.",
         type: "login",
       };
     }
@@ -54,6 +63,7 @@ export default function AuthProvider({ children }) {
     localStorage.removeItem("currentUserEmail");
     setUser(null);
   }
+
   return (
     <AuthContext.Provider value={{ mode, setMode, user, signUp, logout, login }}>
       {children}
@@ -61,8 +71,10 @@ export default function AuthProvider({ children }) {
   );
 }
 
-export function useAuth(){
+export function useAuth() {
   const context = useContext(AuthContext);
-
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
   return context;
 }
